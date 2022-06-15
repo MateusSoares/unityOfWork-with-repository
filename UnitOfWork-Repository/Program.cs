@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UnitOfWork_Repository.Data.Context;
 using UnitOfWork_Repository.Data.Model;
 using UnitOfWork_Repository.Data.Repository;
+using UnitOfWork_Repository.Data.UnityOfWork;
 
 namespace UnitOfWorkWithRepository
 {
@@ -14,7 +15,7 @@ namespace UnitOfWorkWithRepository
             ConfigureServices(serviceCollection);
             var servicesProvider = serviceCollection.BuildServiceProvider();
 
-            var userRepository = servicesProvider.GetService<IUserRepository>();
+            var unitOfWork = servicesProvider.GetService<IUnitOfWork>();
 
             var user = new User
             {
@@ -23,16 +24,20 @@ namespace UnitOfWorkWithRepository
                 Id = 1
             };
 
-            userRepository?.Add(user);
+            unitOfWork.Repository.Add(user);
+            unitOfWork.Commit();
 
-            var userCreated = userRepository?.Find(1);
+            var userCreated = unitOfWork.Repository.First<User>(user => user.Name == "User");
+            
             Console.WriteLine(userCreated?.Name);
         }
 
         static void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IUserRepository, UserRepository>()
-                .AddDbContext<DatabaseContext>(opt => opt.UseInMemoryDatabase("fictDatabase"));
+
+            services.AddDbContext<DatabaseContext>(opt => opt.UseInMemoryDatabase("fictDatabase"));
+            services.AddTransient<IRepository, Repository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             
         }
     }

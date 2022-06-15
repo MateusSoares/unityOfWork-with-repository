@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace UnitOfWork_Repository.Data.Model
 {
-    public class User
+    public class User : ModelBase
     {
         [Key]
         public int Id { get; set; }
