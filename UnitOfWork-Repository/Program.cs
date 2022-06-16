@@ -17,19 +17,41 @@ namespace UnitOfWorkWithRepository
 
             var unitOfWork = servicesProvider.GetService<IUnitOfWork>();
 
-            var user = new User
+            var users = new List<User>()
             {
-                Name = "User",
-                Email = "user@user.com",
-                Id = 1
+                new User
+                {
+                    Name = "User",
+                    Email = "user@user.com",
+                    Id = 1
+                },
+                new User
+                {
+                    Name = "User2",
+                    Email = "user2@user.com",
+                    Id = 2
+                }
             };
-
-            unitOfWork.Repository.Add(user);
+            
+            unitOfWork.Repository.AddRange(users);
             unitOfWork.Commit();
 
             var userCreated = unitOfWork.Repository.First<User>(user => user.Name == "User");
+            var user2Created = unitOfWork.Repository.First<User>(user => user.Name == "User2");
             
             Console.WriteLine(userCreated?.Name);
+            Console.WriteLine(user2Created?.Name);
+
+            Console.WriteLine("-----------------");
+
+            user2Created.Name = "UserNameEdited";
+
+            unitOfWork.Commit();
+
+            var usersCreatedNames = unitOfWork.Repository.Query<User>(user => true).Select(user => user.Name).ToList();
+            usersCreatedNames.ForEach(userName => Console.WriteLine(userName));
+            
+            
         }
 
         static void ConfigureServices(IServiceCollection services)
